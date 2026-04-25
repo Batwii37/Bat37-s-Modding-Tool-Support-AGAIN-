@@ -1,0 +1,191 @@
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Threading;
+
+namespace ToolLauncherConsole
+{
+    class Program
+    {
+        static ConsoleColor[] bgColors = {
+            ConsoleColor.DarkBlue,
+            ConsoleColor.DarkRed,
+            ConsoleColor.DarkGreen,
+            ConsoleColor.DarkMagenta,
+            ConsoleColor.DarkCyan
+        };
+
+        static ConsoleColor[] rainbow = {
+            ConsoleColor.Red,
+            ConsoleColor.Yellow,
+            ConsoleColor.Green,
+            ConsoleColor.Cyan,
+            ConsoleColor.Blue,
+            ConsoleColor.Magenta
+        };
+
+        static int bgIndex = 0;
+
+        static void Main(string[] args)
+        {
+            Console.CursorVisible = true;
+
+            new Thread(ChangeBackgroundLoop) { IsBackground = true }.Start();
+
+            while (true)
+            {
+                DrawUI();
+
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.Write("\nSelect option: ");
+                string input = Console.ReadLine();
+
+                switch (input)
+                {
+                    case "1":
+                        OpenApkToolkit();
+                        break;
+
+                    case "2":
+                        OpenUABEA();
+                        break;
+
+                    case "3":
+                        OpenMetadataEditor();
+                        break;
+
+                    case "4":
+                        return;
+
+                    default:
+                        ShowError("Invalid option.");
+                        break;
+                }
+
+                Console.WriteLine("\nPress any key...");
+                Console.ReadKey();
+            }
+        }
+
+        // 🌈 Safe background changer (NO Console.Clear)
+        static void ChangeBackgroundLoop()
+        {
+            while (true)
+            {
+                Thread.Sleep(5000);
+                bgIndex = (bgIndex + 1) % bgColors.Length;
+                Console.BackgroundColor = bgColors[bgIndex];
+            }
+        }
+
+        // 🎨 UI DRAWER (always redraws cleanly)
+        static void DrawUI()
+        {
+            Console.Clear();
+
+            DrawRainbowHeader();
+
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine("\n=== TOOL LAUNCHER ===\n");
+
+            Console.WriteLine("1. Open APK Toolkit");
+            Console.WriteLine("2. Open UABEA");
+            Console.WriteLine("3. Open Metadata String Editor");
+            Console.WriteLine("4. Exit");
+
+            Console.WriteLine("\nCredits: Batwii37");
+            Console.ResetColor();
+        }
+
+        // 🌈 Rainbow top text
+        static void DrawRainbowHeader()
+        {
+            string text = "Made by Batwii37";
+
+            for (int i = 0; i < text.Length; i++)
+            {
+                Console.ForegroundColor = rainbow[i % rainbow.Length];
+                Console.Write(text[i]);
+            }
+
+            Console.WriteLine();
+            Console.ResetColor();
+        }
+
+        static void OpenApkToolkit()
+        {
+            string user = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+            string path = Path.Combine(
+                user,
+                "Downloads",
+                "APK_Toolkit_v1.5_by_0xd00d",
+                "APK_Toolkit_by_0xd00d",
+                "ApkToolkit.exe"
+            );
+
+            Launch(path, "APK Toolkit");
+        }
+
+        static void OpenUABEA()
+        {
+            string user = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+            string path = Path.Combine(
+                user,
+                "Desktop",
+                "uabea-windows (1)",
+                "UABEAvalonia.exe"
+            );
+
+            Launch(path, "UABEA");
+        }
+
+        static void OpenMetadataEditor()
+        {
+            string user = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+            string path = Path.Combine(
+                user,
+                "Desktop",
+                "MetadataStringEditor",
+                "MetadataStringEditor.exe"
+            );
+
+            Launch(path, "Metadata String Editor");
+        }
+
+        static void Launch(string path, string name)
+        {
+            if (File.Exists(path))
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = path,
+                    WorkingDirectory = Path.GetDirectoryName(path),
+                    UseShellExecute = true
+                });
+
+                Success($"Opened {name}!");
+            }
+            else
+            {
+                ShowError($"{name} not found:\n{path}");
+            }
+        }
+
+        static void ShowError(string msg)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(msg);
+            Console.ResetColor();
+        }
+
+        static void Success(string msg)
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine(msg);
+            Console.ResetColor();
+        }
+    }
+}
